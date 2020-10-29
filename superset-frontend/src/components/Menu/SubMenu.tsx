@@ -22,6 +22,8 @@ import { styled } from '@superset-ui/core';
 import cx from 'classnames';
 import { Nav, Navbar } from 'react-bootstrap';
 import Button, { OnClickHandler } from 'src/components/Button';
+import { TooltipPlacement } from 'antd/lib/tooltip';
+import TooltipWrapper from 'src/components/TooltipWrapper';
 
 const StyledHeader = styled.header`
   .navbar-header .navbar-brand {
@@ -87,6 +89,8 @@ export interface ButtonProps {
   name: ReactNode;
   onClick: OnClickHandler;
   'data-test'?: string;
+  title?: string;
+  tooltip?: { placement: TooltipPlacement; title: string };
   buttonStyle:
     | 'primary'
     | 'secondary'
@@ -118,6 +122,28 @@ const SubMenu: React.FunctionComponent<SubMenuProps> = props => {
     // If error is thrown, we know not to use <Link> in render
     hasHistory = false;
   }
+
+  const buildButton = (btn: ButtonProps, i: number) => {
+    const button = (
+      <Button
+        key={`${i}`}
+        buttonStyle={btn.buttonStyle}
+        onClick={btn.onClick}
+        data-test={btn['data-test']}
+      >
+        {btn.name}
+      </Button>
+    );
+    if (btn.tooltip) {
+      const { placement, title } = btn.tooltip;
+      return (
+        <TooltipWrapper label={title} tooltip={title} placement={placement}>
+          {button}
+        </TooltipWrapper>
+      );
+    }
+    return <>{button}</>;
+  };
   return (
     <StyledHeader>
       <Navbar inverse fluid role="navigation">
@@ -155,16 +181,7 @@ const SubMenu: React.FunctionComponent<SubMenuProps> = props => {
             })}
         </Nav>
         <Nav className="navbar-right">
-          {props.buttons?.map((btn, i) => (
-            <Button
-              key={`${i}`}
-              buttonStyle={btn.buttonStyle}
-              onClick={btn.onClick}
-              data-test={btn['data-test']}
-            >
-              {btn.name}
-            </Button>
-          ))}
+          {props.buttons?.map((btn, i) => buildButton(btn, i))}
         </Nav>
       </Navbar>
     </StyledHeader>
