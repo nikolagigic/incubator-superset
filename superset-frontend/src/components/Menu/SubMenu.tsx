@@ -22,6 +22,8 @@ import { styled } from '@superset-ui/core';
 import cx from 'classnames';
 import { Nav, Navbar } from 'react-bootstrap';
 import Button, { OnClickHandler } from 'src/components/Button';
+import { Tooltip } from 'src/common/components';
+import { TooltipPlacement } from 'antd/lib/tooltip';
 
 const StyledHeader = styled.header`
   .navbar-header .navbar-brand {
@@ -87,6 +89,8 @@ export interface ButtonProps {
   name: ReactNode;
   onClick: OnClickHandler;
   'data-test'?: string;
+  title?: string;
+  tooltip?: { placement: TooltipPlacement; title: string };
   buttonStyle:
     | 'primary'
     | 'secondary'
@@ -118,6 +122,34 @@ const SubMenu: React.FunctionComponent<SubMenuProps> = props => {
     // If error is thrown, we know not to use <Link> in render
     hasHistory = false;
   }
+
+  const buildButton = (btn: ButtonProps, i: number) => {
+    if (btn.tooltip) {
+      const { placement, title } = btn.tooltip;
+      return (
+        <Tooltip title={title} placement={placement}>
+          <Button
+            key={`${i}`}
+            buttonStyle={btn.buttonStyle}
+            onClick={btn.onClick}
+            data-test={btn['data-test']}
+          >
+            {btn.name}
+          </Button>
+        </Tooltip>
+      );
+    }
+    return (
+      <Button
+        key={`${i}`}
+        buttonStyle={btn.buttonStyle}
+        onClick={btn.onClick}
+        data-test={btn['data-test']}
+      >
+        {btn.name}
+      </Button>
+    );
+  };
   return (
     <StyledHeader>
       <Navbar inverse fluid role="navigation">
@@ -155,16 +187,7 @@ const SubMenu: React.FunctionComponent<SubMenuProps> = props => {
             })}
         </Nav>
         <Nav className="navbar-right">
-          {props.buttons?.map((btn, i) => (
-            <Button
-              key={`${i}`}
-              buttonStyle={btn.buttonStyle}
-              onClick={btn.onClick}
-              data-test={btn['data-test']}
-            >
-              {btn.name}
-            </Button>
-          ))}
+          {props.buttons?.map((btn, i) => buildButton(btn, i))}
         </Nav>
       </Navbar>
     </StyledHeader>

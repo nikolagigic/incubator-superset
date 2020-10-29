@@ -33,10 +33,12 @@ import ListView, { ListViewProps, Filters } from 'src/components/ListView';
 import Owner from 'src/types/Owner';
 import withToasts from 'src/messageToasts/enhancers/withToasts';
 import FacePile from 'src/components/FacePile';
+import { post as postImport, get as getDashboards } from 'src/api/dashboard';
 import Icon from 'src/components/Icon';
 import FaveStar from 'src/components/FaveStar';
 import PropertiesModal from 'src/dashboard/components/PropertiesModal';
 import TooltipWrapper from 'src/components/TooltipWrapper';
+import ImportDashboardModal from 'src/dashboard/components/ImportModal/index';
 
 import Dashboard from 'src/dashboard/containers/Dashboard';
 import DashboardCard from './DashboardCard';
@@ -90,6 +92,12 @@ function DashboardList(props: DashboardListProps) {
     null,
   );
 
+  const [importDashboardError, setImportDashboardError] = useState<
+    string | null
+  >();
+
+  const [importingDashboard, showImportModal] = useState<boolean | undefined>();
+
   const canCreate = hasPerm('can_add');
   const canEdit = hasPerm('can_edit');
   const canDelete = hasPerm('can_delete');
@@ -99,6 +107,38 @@ function DashboardList(props: DashboardListProps) {
 
   function openDashboardEditModal(dashboard: Dashboard) {
     setDashboardToEdit(dashboard);
+  }
+
+  function openDashboardImportModal() {
+    showImportModal(true);
+  }
+
+  function clearImportModal() {
+    setImportDashboardError(null);
+    showImportModal(false);
+  }
+
+  async function handleDashboardImport(dashboardFile: File) {
+    try {
+      await postImport(dashboardFile);
+      showImportModal(false);
+      props.addSuccessToast(t('The dashboard has been saved'));
+    } catch (e) {
+      setImportDashboardError(
+        t('An error occurred while importing dashboards: %s', e.message),
+      );
+    }
+    try {
+      const dashboards = await getDashboards();
+      setDashboards(dashboards);
+    } catch (e) {
+      setImportDashboardError(
+        t(
+          'An error occurred while updating the page. Please refresh and try again. %s',
+          e.message,
+        ),
+      );
+    }
   }
 
   function handleDashboardEdit(edits: Dashboard) {
@@ -433,6 +473,14 @@ function DashboardList(props: DashboardListProps) {
         window.location.assign('/dashboard/new');
       },
     });
+    if (isFeatureEnabled(FeatureFlag.VERSIONED_EXPORT)) {
+      subMenuButtons.push({
+        name: <Icon name="import" />,
+        buttonStyle: 'link',
+        onClick: openDashboardImportModal,
+        tooltip: { placement: 'bottom', title: 'Import Dashboards' },
+      });
+    }
   }
   return (
     <>
@@ -497,6 +545,13 @@ function DashboardList(props: DashboardListProps) {
           );
         }}
       </ConfirmStatusChange>
+      <ImportDashboardModal
+        show={importingDashboard}
+        onHide={clearImportModal}
+        onSubmit={handleDashboardImport}
+        error={importDashboardError}
+        onFileSelect={() => setImportDashboardError(null)}
+      />
     </>
   );
 }
