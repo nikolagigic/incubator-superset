@@ -239,7 +239,8 @@ function ChartList(props: ChartListProps) {
         size: 'xl',
       },
       {
-        Cell: ({ row: { original } }: any) => {
+
+        Cell: ({ row: { original: { url, ...original } } }: any) => {
           const handleDelete = () =>
             handleChartDelete(
               original,
@@ -303,7 +304,7 @@ function ChartList(props: ChartListProps) {
               {canEdit && (
                 <TooltipWrapper
                   label="edit-action"
-                  tooltip={t('Edit')}
+                  tooltip={t('Edit Chart Properties')}
                   placement="bottom"
                 >
                   <span
@@ -314,6 +315,20 @@ function ChartList(props: ChartListProps) {
                   >
                     <Icon name="edit-alt" />
                   </span>
+                </TooltipWrapper>
+              )}
+              {canEdit && (
+                <TooltipWrapper
+                  label="explore-action"
+                  tooltip={t('Explore Chart')}
+                  placement="bottom"
+                >
+                  <a href={url}
+                    role="button"
+                    tabIndex={0}
+                    className="action-button">
+                    <Icon name="nav-explore" />
+                  </a>
                 </TooltipWrapper>
               )}
             </span>
