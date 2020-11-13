@@ -336,8 +336,9 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     # tables that users do not have access to.
     "ROW_LEVEL_SECURITY": False,
     # Enables Alerts and reports new implementation
-    "ALERT_REPORTS": False,
+    "ALERT_REPORTS": True,
     "SIP_34_QUERY_SEARCH_UI": False,
+    "SIP_34_ALERTS_UI": True,
 }
 
 # Set the default view to card/grid view if thumbnail support is enabled.
