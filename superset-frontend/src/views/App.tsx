@@ -29,6 +29,7 @@ import ErrorBoundary from 'src/components/ErrorBoundary';
 import Menu from 'src/components/Menu/Menu';
 import FlashProvider from 'src/components/FlashProvider';
 import DashboardList from 'src/views/CRUD/dashboard/DashboardList';
+import AlertList from 'src/views/CRUD/alert/AlertList';
 import ChartList from 'src/views/CRUD/chart/ChartList';
 import DatasetList from 'src/views/CRUD/data/dataset/DatasetList';
 import DatabaseList from 'src/views/CRUD/data/database/DatabaseList';
@@ -119,6 +120,11 @@ const App = () => (
               <Route path="/superset/sqllab/history/">
                 <ErrorBoundary>
                   <QueryList user={user} />
+                </ErrorBoundary>
+              </Route>
+              <Route path="/alert/list/">
+                <ErrorBoundary>
+                  <AlertList user={user} />
                 </ErrorBoundary>
               </Route>
             </Switch>

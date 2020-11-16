@@ -333,7 +333,7 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     # tables that users do not have access to.
     "ROW_LEVEL_SECURITY": False,
     # Enables Alerts and reports new implementation
-    "ALERT_REPORTS": False,
+    "ALERT_REPORTS": True,
     "SIP_34_QUERY_SEARCH_UI": False,
 }
 
@@ -788,7 +788,7 @@ ENABLE_SCHEDULED_EMAIL_REPORTS = False
 # Enable / disable Alerts, where users can define custom SQL that
 # will send emails with screenshots of charts or dashboards periodically
 # if it meets the criteria
-ENABLE_ALERTS = False
+ENABLE_ALERTS = True
 
 # Slack API token for the superset reports
 SLACK_API_TOKEN = None
