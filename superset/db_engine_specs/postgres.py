@@ -14,8 +14,10 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import json
+import logging
 from datetime import datetime
-from typing import Any, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from pytz import _FixedOffset  # type: ignore
 from sqlalchemy.dialects.postgresql.base import PGInspector
@@ -25,6 +27,8 @@ from superset.utils import core as utils
 
 if TYPE_CHECKING:
     from superset.models.core import Database  # pragma: no cover
+
+logger = logging.getLogger()
 
 
 # Replace psycopg2.tz.FixedOffsetTimezone with pytz, which is serializable by PyArrow
@@ -89,3 +93,28 @@ class PostgresEngineSpec(PostgresBaseEngineSpec):
             dttm_formatted = dttm.isoformat(sep=" ", timespec="microseconds")
             return f"""TO_TIMESTAMP('{dttm_formatted}', 'YYYY-MM-DD HH24:MI:SS.US')"""
         return None
+
+    @staticmethod
+    def get_extra_params(database: "Database") -> Dict[str, Any]:
+        """
+        For Postgres, the path to a SSL certificate is placed in `connect_args`.
+
+        :param database: database instance from which to extract extras
+        :raises CertificateException: If certificate is not valid/unparseable
+        :raises JSONDecodeError: If database extra json payload is unparseable
+        """
+        try:
+            extra = json.loads(database.extra or "{}")
+        except json.JSONDecodeError as ex:
+            logger.error(ex)
+            raise ex
+
+        if database.server_cert:
+            engine_params = extra.get("engine_params", {})
+            connect_args = engine_params.get("connect_args", {})
+            connect_args["sslmode"] = connect_args.get("sslmode", "verify-full")
+            path = utils.create_ssl_cert_file(database.server_cert)
+            connect_args["sslrootcert"] = path
+            engine_params["connect_args"] = connect_args
+            extra["engine_params"] = engine_params
+        return extra
