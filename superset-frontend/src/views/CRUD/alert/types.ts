@@ -40,6 +40,8 @@ export type AlertObject = {
   last_eval_dttm: number;
   last_state: string;
   name: string;
+  description?: string;
+  query?: string;
   owners: Array<Owner>;
   recipients: recipients;
   type: string;
