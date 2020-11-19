@@ -25,10 +25,7 @@ type user = {
   last_name: string;
 };
 
-type recipients = {
-  id: number;
-  type: string;
-};
+type Operator = '<' | '>' | '<=' | '>=' | '==' | '!=';
 
 export type AlertObject = {
   active: boolean;
@@ -36,13 +33,21 @@ export type AlertObject = {
   changed_on_delta_humanized?: string;
   created_by?: user;
   created_on?: string;
-  id: number;
+  description?: string;
+  grace_period?: number;
+  id?: number;
   last_eval_dttm: number;
   last_state: string;
-  name: string;
-  description?: string;
+  label: string;
+  log_retention?: number;
   query?: string;
   owners: Array<Owner>;
-  recipients: recipients;
+  recipients?: string;
+  slack_channel?: string;
   type: string;
+  validator_type?: string;
+  validator_config?: {
+    op: Operator;
+    threshold: number;
+  };
 };
