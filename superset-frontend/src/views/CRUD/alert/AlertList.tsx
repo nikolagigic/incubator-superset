@@ -22,7 +22,7 @@ import { t, styled } from '@superset-ui/core';
 import ActionsBar, { ActionProps } from 'src/components/ListView/ActionsBar';
 import Button from 'src/components/Button';
 import Icon, { IconName } from 'src/components/Icon';
-import Tooltip from 'src/common/components/Tooltip';
+import { Tooltip } from 'src/common/components/Tooltip';
 import { Switch } from 'src/common/components/Switch';
 import FacePile from 'src/components/FacePile';
 import ListView from 'src/components/ListView';
