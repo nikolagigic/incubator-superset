@@ -29,6 +29,7 @@ import {
   createFetchDistinct,
   createErrorHandler,
 } from 'src/views/CRUD/utils';
+import { isFeatureEnabled, FeatureFlag } from 'src/featureFlags';
 import { useListViewResource } from 'src/views/CRUD/hooks';
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
 import DatasourceModal from 'src/datasource/DatasourceModal';
@@ -45,7 +46,10 @@ import TooltipWrapper from 'src/components/TooltipWrapper';
 import Icon from 'src/components/Icon';
 import FacePile from 'src/components/FacePile';
 import CertifiedIconWithTooltip from 'src/components/CertifiedIconWithTooltip';
-import AddDatasetModal from './AddDatasetModal';
+
+import { get as getDatasets, importDataset } from 'src/api/dataset';
+import AddDatasetModal from '../AddDatasetModal';
+import ImportDatasetModal from '../ImportModal';
 
 const PAGE_SIZE = 25;
 
@@ -110,12 +114,48 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
     setDatasetCurrentlyEditing,
   ] = useState<Dataset | null>(null);
 
+  const [importDatasetError, setImportDatasetError] = useState<string | null>();
+
+  const [importingDataset, showImportModal] = useState<boolean | undefined>();
+
   const canEdit = hasPerm('can_edit');
   const canDelete = hasPerm('can_delete');
   const canCreate = hasPerm('can_add');
   const canExport = hasPerm('can_mulexport');
 
   const initialSort = [{ id: 'changed_on_delta_humanized', desc: true }];
+
+  const openDatasetImportModal = () => {
+    showImportModal(true);
+  };
+
+  const clearImportModal = () => {
+    setImportDatasetError(null);
+    showImportModal(false);
+  };
+
+  const handleDatasetImport = async (datasetFile: File) => {
+    try {
+      await importDataset(datasetFile);
+      showImportModal(false);
+      addSuccessToast(t('The dataset has been saved'));
+    } catch (e) {
+      setImportDatasetError(
+        t('An error occurred while importing dataset: %s', datasetFile.name),
+      );
+    }
+    try {
+      const dashboards = await getDatasets();
+      // setDatasets(dashboards);
+    } catch (e) {
+      setImportDatasetError(
+        t(
+          'An error occurred while updating the page. Please refresh and try again. %s',
+          e.message,
+        ),
+      );
+    }
+  };
 
   const openDatasetEditModal = useCallback(
     ({ id }: Dataset) => {
@@ -445,6 +485,14 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
       onClick: () => setDatasetAddModalOpen(true),
       buttonStyle: 'primary',
     });
+    if (isFeatureEnabled(FeatureFlag.VERSIONED_EXPORT)) {
+      buttonArr.push({
+        name: <Icon name="import" />,
+        buttonStyle: 'link',
+        onClick: openDatasetImportModal,
+        tooltip: { placement: 'bottom', title: 'Import Dataset' },
+      });
+    }
   }
 
   menuData.buttons = buttonArr;
@@ -613,6 +661,13 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           );
         }}
       </ConfirmStatusChange>
+      <ImportDatasetModal
+        show={importingDataset}
+        onHide={clearImportModal}
+        onSubmit={handleDatasetImport}
+        error={importDatasetError}
+        onFileSelect={() => setImportDatasetError(null)}
+      />
     </>
   );
 };
